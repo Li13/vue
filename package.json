@@ -1,7 +1,7 @@
 {
   "private": true,
   "version": "3.4.34",
-  "packageManager": "pnpm@9.6.0",
+  "packageManager": "pnpm@9.6.0+sha256.dae0f7e822c56b20979bb5965e3b73b8bdabb6b8b8ef121da6d857508599ca35",
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.js",
