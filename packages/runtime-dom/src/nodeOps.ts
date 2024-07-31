@@ -1,4 +1,5 @@
 import type { RendererOptions } from '@vue/runtime-core'
+import { rpxToVw, isFunction } from '@vue/shared'
 
 export const svgNS = 'http://www.w3.org/2000/svg'
 export const mathmlNS = 'http://www.w3.org/1998/Math/MathML'
@@ -91,6 +92,18 @@ export const nodeOps: Omit<RendererOptions<Node, Element>, 'patchProp'> = {
           template.appendChild(wrapper.firstChild)
         }
         template.removeChild(wrapper)
+      }
+      if (template && template.childNodes.length) {
+        for (let i = 0; i < template.childNodes.length; i++) {
+          const node = template.childNodes[i] as ChildNode & { getAttribute(name: string): string; setAttribute(name: string, value: string): void }
+          if (node && isFunction(node.getAttribute) && isFunction(node.setAttribute)) {
+            const originStyle = node.getAttribute('style')
+            const nextStyle = rpxToVw(originStyle)
+            if (originStyle !== nextStyle) {
+              node.setAttribute('style', nextStyle)
+            }
+          }
+        }
       }
       parent.insertBefore(template, anchor)
     }

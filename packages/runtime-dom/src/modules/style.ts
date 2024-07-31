@@ -1,4 +1,4 @@
-import { capitalize, hyphenate, isArray, isString } from '@vue/shared'
+import { capitalize, hyphenate, isArray, isString, rpxToVw } from '@vue/shared'
 import { camelize, warn } from '@vue/runtime-core'
 import {
   type VShowElement,
@@ -46,7 +46,7 @@ export function patchStyle(el: Element, prev: Style, next: Style) {
         if (cssVarText) {
           ;(next as string) += ';' + cssVarText
         }
-        style.cssText = next as string
+        style.cssText = rpxToVw(next) as string
         hasControlledDisplay = displayRE.test(next)
       }
     } else if (prev) {
@@ -83,6 +83,7 @@ function setStyle(
         )
       }
     }
+    val = rpxToVw(val)
     if (name.startsWith('--')) {
       // custom property definition
       style.setProperty(name, val)

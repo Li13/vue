@@ -8,7 +8,7 @@ import {
   warn,
   watchPostEffect,
 } from '@vue/runtime-core'
-import { ShapeFlags } from '@vue/shared'
+import { ShapeFlags, rpxToVw } from '@vue/shared'
 
 export const CSS_VAR_TEXT = Symbol(__DEV__ ? 'CSS_VAR_TEXT' : '')
 /**
@@ -86,7 +86,7 @@ function setVarsOnNode(el: Node, vars: Record<string, string>) {
     let cssText = ''
     for (const key in vars) {
       style.setProperty(`--${key}`, vars[key])
-      cssText += `--${key}: ${vars[key]};`
+      cssText += `--${key}: ${rpxToVw(vars[key])};`
     }
     ;(style as any)[CSS_VAR_TEXT] = cssText
   }

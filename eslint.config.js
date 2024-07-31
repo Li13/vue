@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint'
 import vitest from 'eslint-plugin-vitest'
 import { builtinModules } from 'node:module'
 
-const DOMGlobals = ['window', 'document']
+const DOMGlobals = ['window', 'document', 'qts']
 const NodeGlobals = ['module', 'require']
 
 const banConstEnum = {

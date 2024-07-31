@@ -41,6 +41,7 @@ import {
   type AppContext,
   createAppContext,
 } from './apiCreateApp'
+import { inject } from './apiInject'
 import { type Directive, validateDirectiveName } from './directives'
 import {
   type ComponentOptions,
@@ -533,6 +534,11 @@ export interface ComponentInternalInstance {
    * @internal
    */
   resolvedOptions?: MergedComponentOptions
+
+  getPageId?: () => string
+  getCurrentPage?: () => ComponentInternalInstance | null
+  createSelectorQuery?: () => any
+  createIntersectionObserver?: (options: any) => any
 }
 
 const emptyAppContext = createAppContext()
@@ -633,6 +639,7 @@ export function createComponentInstance(
   } else {
     instance.ctx = { _: instance }
   }
+  setupQMethods(instance)
   instance.root = parent ? parent.root : instance
   instance.emit = emit.bind(null, instance)
 
@@ -729,6 +736,32 @@ export function validateComponentName(
 
 export function isStatefulComponent(instance: ComponentInternalInstance) {
   return instance.vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
+}
+
+function setupQMethods(instance: ComponentInternalInstance) {
+  setCurrentInstance(instance)
+  const pId = inject('$pageId') as string
+  unsetCurrentInstance()
+  instance.getPageId = () => pId
+  instance.getCurrentPage = () => (window as Record<string, any>)['getRealPageInstance']?.(pId)
+  instance.createSelectorQuery = () => {
+    if (typeof qts === 'undefined' || typeof qts.createSelectorQuery !== 'function') {
+      console.error('无法找到qts.createSelectorQuery函数')
+      return () => {
+        //
+      }
+    }
+    return qts.createSelectorQuery(instance)
+  }
+  instance.createIntersectionObserver = options => {
+    if (typeof qts === 'undefined' || typeof qts.createIntersectionObserver !== 'function') {
+      console.error('无法找到qts.createIntersectionObserver函数')
+      return () => {
+        //
+      }
+    }
+    return qts.createIntersectionObserver(instance, options)
+  }
 }
 
 export let isInSSRComponentSetup = false

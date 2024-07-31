@@ -13,4 +13,14 @@ export enum LifecycleHooks {
   RENDER_TRACKED = 'rtc',
   ERROR_CAPTURED = 'ec',
   SERVER_PREFETCH = 'sp',
+  APP_LAUNCH = 'la',
+  APP_SHOW = 'ash',
+  APP_HIDE = 'ahi',
+  PAGE_LOAD = 'lo',
+  PAGE_UNLOAD = 'ul',
+  PAGE_SHOW = 'sh',
+  PAGE_HIDE = 'hi',
+  PAGE_PULL_DOWN_REFRESH = 'pdr',
+  PAGE_REACH_BOTTOM = 'rb',
+  PAGE_SCROLL = 'ps'
 }
