@@ -397,9 +397,6 @@ export interface ComponentInternalInstance {
   refs: Data
   emit: EmitFn
 
-  attrsProxy: Data | null
-  slotsProxy: Slots | null
-
   /**
    * used for keeping track of .once event handlers on components
    * @internal
@@ -605,9 +602,6 @@ export function createComponentInstance(
     setupState: EMPTY_OBJ,
     setupContext: null,
 
-    attrsProxy: null,
-    slotsProxy: null,
-
     // suspense related
     suspense,
     suspenseId: suspense ? suspense.pendingId : 0,
@@ -769,13 +763,14 @@ export let isInSSRComponentSetup = false
 export function setupComponent(
   instance: ComponentInternalInstance,
   isSSR = false,
+  optimized = false,
 ) {
   isSSR && setInSSRSetupState(isSSR)
 
   const { props, children } = instance.vnode
   const isStateful = isStatefulComponent(instance)
   initProps(instance, props, isStateful, isSSR)
-  initSlots(instance, children)
+  initSlots(instance, children, optimized)
 
   const setupResult = isStateful
     ? setupStatefulComponent(instance, isSSR)
@@ -1074,15 +1069,12 @@ const attrsProxyHandlers = __DEV__
  * Dev-only
  */
 function getSlotsProxy(instance: ComponentInternalInstance): Slots {
-  return (
-    instance.slotsProxy ||
-    (instance.slotsProxy = new Proxy(instance.slots, {
-      get(target, key: string) {
-        track(instance, TrackOpTypes.GET, '$slots')
-        return target[key]
-      },
-    }))
-  )
+  return new Proxy(instance.slots, {
+    get(target, key: string) {
+      track(instance, TrackOpTypes.GET, '$slots')
+      return target[key]
+    },
+  })
 }
 
 export function createSetupContext(
@@ -1116,6 +1108,7 @@ export function createSetupContext(
     // We use getters in dev in case libs like test-utils overwrite instance
     // properties (overwrites should not be done in prod)
     let attrsProxy: Data
+    let slotsProxy: Slots
     return Object.freeze({
       get attrs() {
         return (
@@ -1124,7 +1117,7 @@ export function createSetupContext(
         )
       },
       get slots() {
-        return getSlotsProxy(instance)
+        return slotsProxy || (slotsProxy = getSlotsProxy(instance))
       },
       get emit() {
         return (event: string, ...args: any[]) => instance.emit(event, ...args)
