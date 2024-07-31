@@ -24,7 +24,7 @@ export function injectHook(
   prepend: boolean = false,
 ): Function | undefined {
   if (target) {
-    const hooks = target[type] || (target[type] = [])
+    const hooks = (target as any)[type] || ((target as any)[type] = [])
     // cache the error handling wrapper for injected hooks so the same hook
     // can be properly deduped by the scheduler. "__weh" stands for "with error
     // handling".

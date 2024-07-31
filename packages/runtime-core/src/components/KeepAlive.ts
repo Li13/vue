@@ -443,7 +443,7 @@ function injectToKeepAliveRoot(
   // the wrapped version.
   const injected = injectHook(type, hook, keepAliveRoot, true /* prepend */)
   onUnmounted(() => {
-    remove(keepAliveRoot[type]!, injected)
+    remove((keepAliveRoot as any)[type]!, injected)
   }, target)
 }
 
