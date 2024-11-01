@@ -1,5 +1,5 @@
 {
-  "name": "@roundjs/fission-vue",
+  "name": "vue",
   "version": "3.4.35-alpha.1",
   "description": "The progressive JavaScript framework for building modern web UI.",
   "main": "index.js",
