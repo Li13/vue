@@ -18,7 +18,7 @@ export function addEventListener(
   event: string,
   handler: EventListener,
   options?: EventListenerOptions,
-) {
+): void {
   el.addEventListener(event, handler, options)
 }
 
@@ -27,11 +27,11 @@ export function removeEventListener(
   event: string,
   handler: EventListener,
   options?: EventListenerOptions,
-) {
+): void {
   el.removeEventListener(event, handler, options)
 }
 
-const veiKey = Symbol('_vei')
+const veiKey: unique symbol = Symbol('_vei')
 
 export function patchEvent(
   el: Element & { [veiKey]?: Record<string, Invoker | undefined> },
@@ -39,7 +39,7 @@ export function patchEvent(
   prevValue: EventValue | null,
   nextValue: EventValue | unknown,
   instance: ComponentInternalInstance | null = null,
-) {
+): void {
   // vei = vue event invokers
   const invokers = el[veiKey] || (el[veiKey] = {})
   const existingInvoker = invokers[rawName]
@@ -86,7 +86,7 @@ function parseName(name: string): [string, EventListenerOptions | undefined] {
 // To avoid the overhead of repeatedly calling Date.now(), we cache
 // and use the same timestamp for all event listeners attached in the same tick.
 let cachedNow: number = 0
-const p = /*#__PURE__*/ Promise.resolve()
+const p = /*@__PURE__*/ Promise.resolve()
 const getNow = () =>
   cachedNow || (p.then(() => (cachedNow = 0)), (cachedNow = Date.now()))
 
@@ -112,7 +112,17 @@ function createInvoker(
     } else if (e._vts <= invoker.attached) {
       return
     }
-    const overrideInvokerEvent = instance && instance.appContext?.config?.globalProperties?.$q_overrideInvokerEvent
+
+    let overrideInvokerEvent
+    if (
+      instance &&
+      instance.appContext.config &&
+      instance.appContext.config.globalProperties.$q_overrideInvokerEvent
+    ) {
+      overrideInvokerEvent =
+        instance.appContext.config.globalProperties.$q_overrideInvokerEvent
+    }
+
     callWithAsyncErrorHandling(
       patchStopImmediatePropagation(e, invoker.value, overrideInvokerEvent),
       instance,
@@ -139,7 +149,7 @@ function sanitizeEventValue(value: unknown, propName: string): EventValue {
 function patchStopImmediatePropagation(
   e: Event,
   value: EventValue,
-  overrideEvent?: (invoker: Function) => Function
+  overrideEvent?: (invoker: Function) => Function,
 ): EventValue {
   if (isArray(value)) {
     const originalStop = e.stopImmediatePropagation
@@ -148,7 +158,10 @@ function patchStopImmediatePropagation(
       ;(e as any)._stopped = true
     }
     return (value as Function[]).map(
-      fn => (e: Event) => !(e as any)._stopped && fn && (isFunction(overrideEvent) ?overrideEvent(fn):fn )(e),
+      fn => (e: Event) =>
+        !(e as any)._stopped &&
+        fn &&
+        (isFunction(overrideEvent) ? overrideEvent(fn) : fn)(e),
     )
   } else {
     return isFunction(overrideEvent) ? overrideEvent(value) : value

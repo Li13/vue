@@ -2,14 +2,16 @@ const fromUnit = 'rpx'
 const viewportWidth = 750
 const precision = 5
 
-
 function createUnitRegexp(unit: string) {
-  return new RegExp('"[^"]+"|\'[^\']+\'|url\\([^\\)]+\\)|(\\d*\\.?\\d+)' + unit, 'g')
+  return new RegExp(
+    '"[^"]+"|\'[^\']+\'|url\\([^\\)]+\\)|(\\d*\\.?\\d+)' + unit,
+    'g',
+  )
 }
 
 const regex = createUnitRegexp(fromUnit)
 
-export function rpxToVw(str: string) {
+export function rpxToVw(str: string): string {
   if (typeof str === 'string' && str.indexOf(fromUnit) > -1) {
     const value = str.replace(regex, createReplace())
     return value
