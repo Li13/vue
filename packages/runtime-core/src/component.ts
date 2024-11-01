@@ -803,7 +803,7 @@ export function isStatefulComponent(
 
 function setupQMethods(instance: ComponentInternalInstance) {
   setCurrentInstance(instance)
-  const pId = inject('$pageId') as string
+  const pId = inject('$pageId', '') as string
   unsetCurrentInstance()
   instance.getPageId = () => pId
   instance.getCurrentPage = () => {
