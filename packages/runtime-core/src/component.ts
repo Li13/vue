@@ -598,6 +598,7 @@ export interface ComponentInternalInstance {
   resolvedOptions?: MergedComponentOptions
 
   getPageId?: () => string
+  getPagePath?: () => string
   getCurrentPage?: () => ComponentInternalInstance | null
   createSelectorQuery?: () => any
   createIntersectionObserver?: (options: any) => any
@@ -802,10 +803,15 @@ export function isStatefulComponent(
 }
 
 function setupQMethods(instance: ComponentInternalInstance) {
+  // eslint-disable-next-line no-restricted-globals
+  instance.ctx.$getGlobalRef = (window as Record<string, any>)['$getGlobalRef']
+  const isApp = instance.uid === instance.appContext.app._uid
   setCurrentInstance(instance)
   const pId = inject('$pageId', '') as string
+  const pRoute = inject('$fissionRoutePath', '')
   unsetCurrentInstance()
-  instance.getPageId = () => pId
+  instance.getPageId = () => (isApp ? 'app' : pId)
+  instance.getPagePath = () => (isApp ? 'app' : pRoute)
   instance.getCurrentPage = () => {
     // eslint-disable-next-line no-restricted-globals
     const getRealPageInstance = (window as Record<string, any>)[
