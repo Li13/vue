@@ -847,6 +847,17 @@ function setupQMethods(instance: ComponentInternalInstance) {
   }
 }
 
+export function unSetupQMethods(instance: ComponentInternalInstance): void {
+  if (instance) {
+    delete instance.ctx.$getGlobalRef
+    delete instance.getPageId
+    delete instance.getPagePath
+    delete instance.getCurrentPage
+    delete instance.createSelectorQuery
+    delete instance.createIntersectionObserver
+  }
+}
+
 export let isInSSRComponentSetup = false
 
 export function setupComponent(

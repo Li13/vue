@@ -20,6 +20,7 @@ import {
   type LifecycleHook,
   createComponentInstance,
   setupComponent,
+  unSetupQMethods,
 } from './component'
 import {
   filterSingleRoot,
@@ -2326,6 +2327,8 @@ function baseCreateRenderer(
     if (__DEV__ || __FEATURE_PROD_DEVTOOLS__) {
       devtoolsComponentRemoved(instance)
     }
+
+    unSetupQMethods(instance)
   }
 
   const unmountChildren: UnmountChildrenFn = (
