@@ -183,7 +183,7 @@ function createConfig(format, output, plugins = []) {
       // is targeting Node (SSR)?
       __CJS__: String(isCJSBuild),
       // need SSR-specific branches?
-      __SSR__: String(!isGlobalBuild),
+      __SSR__: String(false),
 
       // 2.x compat build
       __COMPAT__: String(isCompatBuild),

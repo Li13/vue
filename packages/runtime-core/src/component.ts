@@ -810,6 +810,23 @@ function setupQMethods(instance: ComponentInternalInstance) {
   const pId = inject('$pageId', '') as string
   const pRoute = inject('$fissionRoutePath', '')
   unsetCurrentInstance()
+
+  // eslint-disable-next-line no-restricted-globals
+  const fissionGlobalPagesMap = (window as Record<string, any>)[
+    'fissionGlobalPagesMap'
+  ]
+
+  if (
+    instance.parent &&
+    instance.parent.type.name === 'fission-wrap-page-body' &&
+    fissionGlobalPagesMap
+  ) {
+    const v = fissionGlobalPagesMap.get(pId)
+    if (v) {
+      v.page = instance
+    }
+  }
+
   instance.getPageId = () => (isApp ? 'app' : pId)
   instance.getPagePath = () => (isApp ? 'app' : pRoute)
   instance.getCurrentPage = () => {
@@ -849,12 +866,16 @@ function setupQMethods(instance: ComponentInternalInstance) {
 
 export function unSetupQMethods(instance: ComponentInternalInstance): void {
   if (instance) {
-    delete instance.ctx.$getGlobalRef
-    delete instance.getPageId
-    delete instance.getPagePath
-    delete instance.getCurrentPage
-    delete instance.createSelectorQuery
-    delete instance.createIntersectionObserver
+    try {
+      delete instance.ctx.$getGlobalRef
+      delete instance.getPageId
+      delete instance.getPagePath
+      delete instance.getCurrentPage
+      delete instance.createSelectorQuery
+      delete instance.createIntersectionObserver
+    } catch (e) {
+      //
+    }
   }
 }
 
