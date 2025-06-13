@@ -803,8 +803,13 @@ export function isStatefulComponent(
 }
 
 function setupQMethods(instance: ComponentInternalInstance) {
-  // eslint-disable-next-line no-restricted-globals
-  instance.ctx.$getGlobalRef = (window as Record<string, any>)['$getGlobalRef']
+  instance.ctx.$getGlobalRef = (name: string) => {
+    // eslint-disable-next-line no-restricted-globals
+    const getGlobalRef = (window as Record<string, any>)['$getGlobalRef']
+    if (isFunction(getGlobalRef)) {
+      return getGlobalRef(name)
+    }
+  }
   const isApp = instance.uid === instance.appContext.app._uid
   setCurrentInstance(instance)
   const pId = inject('$pageId', '') as string
@@ -867,12 +872,12 @@ function setupQMethods(instance: ComponentInternalInstance) {
 export function unSetupQMethods(instance: ComponentInternalInstance): void {
   if (instance) {
     try {
-      delete instance.ctx.$getGlobalRef
-      delete instance.getPageId
-      delete instance.getPagePath
-      delete instance.getCurrentPage
-      delete instance.createSelectorQuery
-      delete instance.createIntersectionObserver
+      instance.createSelectorQuery = () => {
+        //
+      }
+      instance.createIntersectionObserver = () => {
+        //
+      }
     } catch (e) {
       //
     }
