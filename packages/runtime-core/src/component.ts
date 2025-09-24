@@ -313,6 +313,13 @@ export type InternalRenderFunction = {
   _compatWrapped?: boolean // is wrapped for v2 compat
 }
 
+export interface FissionCurrentPageInfo {
+  pageId: string
+  currentPath: string
+  isActivated: boolean
+  onLoadQuery: Record<string, string>
+}
+
 /**
  * We expose a subset of properties on the internal instance as they are
  * useful for advanced external libraries and tools.
@@ -600,6 +607,7 @@ export interface ComponentInternalInstance {
    */
   resolvedOptions?: MergedComponentOptions
 
+  getCurrentPageInfo?: () => FissionCurrentPageInfo | null
   getPageId?: () => string
   getPagePath?: () => string
   getCurrentPage?: () => ComponentInternalInstance | null
@@ -815,9 +823,15 @@ function setupQMethods(instance: ComponentInternalInstance) {
   }
   const isApp = instance.uid === instance.appContext.app._uid
   setCurrentInstance(instance)
-  const pId = inject('$pageId', '') as string
-  const pRoute = inject('$fissionRoutePath', '')
+  const fissionCurrentPageInfo = inject(
+    '$fissionCurrentPageInfo',
+  ) as FissionCurrentPageInfo | null
   unsetCurrentInstance()
+
+  const pId = fissionCurrentPageInfo ? fissionCurrentPageInfo.pageId : ''
+  const pRoute = fissionCurrentPageInfo
+    ? fissionCurrentPageInfo.currentPath
+    : ''
 
   // eslint-disable-next-line no-restricted-globals
   const fissionGlobalPagesMap = (window as Record<string, any>)[
@@ -834,7 +848,7 @@ function setupQMethods(instance: ComponentInternalInstance) {
       v.page = instance
     }
   }
-
+  instance.getCurrentPageInfo = () => fissionCurrentPageInfo
   instance.getPageId = () => (isApp ? 'app' : pId)
   instance.getPagePath = () => (isApp ? 'app' : pRoute)
   instance.getCurrentPage = () => {
