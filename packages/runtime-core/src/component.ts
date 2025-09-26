@@ -825,6 +825,7 @@ function setupQMethods(instance: ComponentInternalInstance) {
   setCurrentInstance(instance)
   const fissionCurrentPageInfo = inject(
     '$fissionCurrentPageInfo',
+    null,
   ) as FissionCurrentPageInfo | null
   unsetCurrentInstance()
 
