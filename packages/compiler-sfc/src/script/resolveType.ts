@@ -853,7 +853,7 @@ export function registerTS(_loadTS: () => typeof TS): void {
       ) {
         throw new Error(
           'Failed to load TypeScript, which is required for resolving imported types. ' +
-            'Please make sure "typescript" is installed as a project dependency.',
+            'Please make sure "TypeScript" is installed as a project dependency.',
         )
       } else {
         throw new Error(
@@ -951,7 +951,7 @@ function importSourceToScope(
         if (!ts) {
           return ctx.error(
             `Failed to resolve import source ${JSON.stringify(source)}. ` +
-              `typescript is required as a peer dep for vue in order ` +
+              `TypeScript is required as a peer dep for vue in order ` +
               `to support resolving types from module imports.`,
             node,
             scope,
@@ -1515,6 +1515,13 @@ export function inferRuntimeType(
   isKeyOf = false,
   typeParameters?: Record<string, Node>,
 ): string[] {
+  if (
+    node.leadingComments &&
+    node.leadingComments.some(c => c.value.includes('@vue-ignore'))
+  ) {
+    return [UNKNOWN_TYPE]
+  }
+
   try {
     switch (node.type) {
       case 'TSStringKeyword':
@@ -1780,6 +1787,47 @@ export function inferRuntimeType(
           isKeyOf,
           typeParameters,
         ).filter(t => t !== UNKNOWN_TYPE)
+      }
+      case 'TSMappedType': {
+        // only support { [K in keyof T]: T[K] }
+        const { typeAnnotation, typeParameter } = node
+        if (
+          typeAnnotation &&
+          typeAnnotation.type === 'TSIndexedAccessType' &&
+          typeParameter &&
+          typeParameter.constraint &&
+          typeParameters
+        ) {
+          const constraint = typeParameter.constraint
+          if (
+            constraint.type === 'TSTypeOperator' &&
+            constraint.operator === 'keyof' &&
+            constraint.typeAnnotation &&
+            constraint.typeAnnotation.type === 'TSTypeReference' &&
+            constraint.typeAnnotation.typeName.type === 'Identifier'
+          ) {
+            const typeName = constraint.typeAnnotation.typeName.name
+            const index = typeAnnotation.indexType
+            const obj = typeAnnotation.objectType
+            if (
+              obj &&
+              obj.type === 'TSTypeReference' &&
+              obj.typeName.type === 'Identifier' &&
+              obj.typeName.name === typeName &&
+              index &&
+              index.type === 'TSTypeReference' &&
+              index.typeName.type === 'Identifier' &&
+              index.typeName.name === typeParameter.name
+            ) {
+              const targetType = typeParameters[typeName]
+              if (targetType) {
+                return inferRuntimeType(ctx, targetType, scope)
+              }
+            }
+          }
+        }
+
+        return [UNKNOWN_TYPE]
       }
 
       case 'TSEnumDeclaration':
