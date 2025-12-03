@@ -124,7 +124,7 @@ function createInvoker(
     }
 
     callWithAsyncErrorHandling(
-      patchStopImmediatePropagation(e, invoker.value, overrideInvokerEvent),
+      patchStopImmediatePropagation(e, invoker, overrideInvokerEvent),
       instance,
       ErrorCodes.NATIVE_EVENT_HANDLER,
       [e],
@@ -148,9 +148,10 @@ function sanitizeEventValue(value: unknown, propName: string): EventValue {
 
 function patchStopImmediatePropagation(
   e: Event,
-  value: EventValue,
-  overrideEvent?: (invoker: Function) => Function,
+  invoker: Invoker,
+  overrideEvent?: (value: EventValue, invoker: Invoker) => Function,
 ): EventValue {
+  const value = invoker.value
   if (isArray(value)) {
     const originalStop = e.stopImmediatePropagation
     e.stopImmediatePropagation = () => {
@@ -161,9 +162,9 @@ function patchStopImmediatePropagation(
       fn => (e: Event) =>
         !(e as any)._stopped &&
         fn &&
-        (isFunction(overrideEvent) ? overrideEvent(fn) : fn)(e),
+        (isFunction(overrideEvent) ? overrideEvent(fn, invoker) : fn)(e),
     )
   } else {
-    return isFunction(overrideEvent) ? overrideEvent(value) : value
+    return isFunction(overrideEvent) ? overrideEvent(value, invoker) : value
   }
 }
